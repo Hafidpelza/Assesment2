@@ -9,25 +9,9 @@ class ExerciseController extends Controller
 {
     public function index(Request $request)
     {
-        if (Exercise::count() === 0) {
-            Exercise::create([
-                'nama' => 'Jumping Jack',
-                'kategori' => 'CARDIO / PLYOMETRICS',
-                'deskripsi' => 'A total-body aerobic exercise that works your heart, lungs, and muscles at the same time.',
-                'intensitas' => 'High Intensity',
-                'durasi_detik' => 60,
-                'tipe' => 'Bodyweight',
-                'est_burn' => 12,
-                'heart_rate' => 145,
-                'cardio_load' => 85,
-                'primary_muscle' => 'Calves',
-                'secondary_muscles' => 'Shoulders, Glutes, Quadriceps',
-            ]);
-        }
-
         $exercises = Exercise::latest()->get();
-        $activeExercise = $request->has('id')
-            ? Exercise::findOrFail($request->id)
+        $activeExercise =$request->has('id')
+            ? Exercise::find($request->id)
             : $exercises->first();
 
         return view('exercise.index', compact('exercises', 'activeExercise'));
@@ -47,7 +31,6 @@ class ExerciseController extends Controller
             'kategori' => $request->kategori,
             'durasi_detik' => $request->durasi_detik,
             'deskripsi' => $request->deskripsi,
-            // Nilai default otomatis agar tidak perlu diisi di form
             'intensitas' => 'Medium Intensity',
             'tipe' => 'Bodyweight',
             'est_burn' => 10,
@@ -61,7 +44,7 @@ class ExerciseController extends Controller
             ->with('success', 'Gerakan exercise berhasil ditambahkan!');
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request,$id)
     {
         $exercise = Exercise::findOrFail($id);
 
@@ -85,7 +68,9 @@ class ExerciseController extends Controller
 
     public function destroy($id)
     {
-        Exercise::findOrFail($id)->delete();
+        $exercise = Exercise::find($id);
+        if ($exercise) {$exercise->delete();
+        }
 
         return redirect()->route('exercise.index')
             ->with('success', 'Gerakan exercise berhasil dihapus.');

@@ -63,8 +63,8 @@
                         Edit Exercise
                     </button>
                     <form action="{{ route('exercise.destroy', $activeExercise->id) }}" method="POST" onsubmit="return confirm('Hapus gerakan ini?')">
-                        <input type="hidden" name="_token" value="{{ csrf_token() }}">
-                        <input type="hidden" name="_method" value="DELETE">
+                        @csrf
+                        @method('DELETE')
                         <button type="submit" class="px-3 py-1.5 text-xs font-semibold rounded-lg border border-red-200 bg-red-50 text-red-600 hover:bg-red-100 transition">
                             Hapus
                         </button>
@@ -190,34 +190,59 @@
                     @endforeach
                 </div>
             </section>
+        @else
+            <div class="text-center py-16 bg-slate-50 rounded-2xl border border-dashed border-slate-300 space-y-2">
+                <p class="text-sm font-bold text-slate-700">Belum ada data gerakan exercise.</p>
+                <p class="text-xs text-slate-500">Klik tombol <strong>+ Tambah Exercise</strong> di pojok kanan atas untuk menambahkan data baru.</p>
+            </div>
         @endif
 
         <!-- Daftar Semua Gerakan Exercise (Read List) -->
         <section class="mt-12 pt-8 border-t border-slate-100 space-y-4">
             <div class="flex justify-between items-center">
-                <h2 class="text-sm font-extrabold text-slate-900">Daftar Gerakan Exercise Tersimpan</h2>
-                <span class="text-xs text-slate-400">Klik kartu untuk melihat detail gerakan</span>
+                <h2 class="text-sm font-extrabold text-slate-900">Daftar Gerakan Exercise Tersimpan ({{ $exercises->count() }})</h2>
+                <span class="text-xs text-slate-400">Klik "Lihat Detail" atau "Hapus" pada masing-masing kartu</span>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                @foreach($exercises as $item)
-                    <a href="{{ route('exercise.index', ['id' => $item->id]) }}"
-                       class="block p-4 rounded-xl border transition {{ $activeExercise && $activeExercise->id === $item->id ? 'bg-[#F2FBF5] border-[#1B8736]' : 'bg-white border-slate-200 hover:border-slate-300' }}">
-                        <div class="flex justify-between items-start">
+            @if($exercises->isEmpty())
+                <div class="text-center py-10 bg-slate-50 rounded-xl border border-dashed border-slate-300">
+                    <p class="text-xs font-semibold text-slate-500">Daftar gerakan kosong (0 data).</p>
+                </div>
+            @else
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    @foreach($exercises as $item)
+                        <div class="p-4 rounded-xl border transition flex flex-col justify-between {{ $activeExercise && $activeExercise->id === $item->id ? 'bg-[#F2FBF5] border-[#1B8736]' : 'bg-white border-slate-200 hover:border-slate-300' }}">
                             <div>
-                                <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">{{ $item->kategori }}</p>
-                                <h3 class="text-sm font-extrabold text-slate-900 mt-0.5">{{ $item->nama }}</h3>
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">{{ $item->kategori }}</p>
+                                        <h3 class="text-sm font-extrabold text-slate-900 mt-0.5">{{ $item->nama }}</h3>
+                                    </div>
+                                    <span class="text-[11px] font-bold text-[#1B8736] bg-[#E8F5E9] px-2.5 py-0.5 rounded-full">
+                                        {{ $item->durasi_detik }}s
+                                    </span>
+                                </div>
+                                <p class="text-[11px] text-slate-500 mt-2">
+                                    Burn: <strong>{{ $item->est_burn }} kcal/min</strong> • Primary: <strong>{{ $item->primary_muscle }}</strong>
+                                </p>
                             </div>
-                            <span class="text-[11px] font-bold text-[#1B8736] bg-[#E8F5E9] px-2.5 py-0.5 rounded-full">
-                                {{ $item->durasi_detik }}s
-                            </span>
+
+                            <div class="mt-3 pt-2.5 border-t border-slate-100 flex justify-between items-center">
+                                <a href="{{ route('exercise.index', ['id' => $item->id]) }}" class="text-[11px] font-semibold text-[#1B8736] hover:underline">
+                                    Lihat Detail
+                                </a>
+                                <form action="{{ route('exercise.destroy', $item->id) }}" method="POST">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" onclick="return confirm('Yakin hapus gerakan {{ $item->nama }}?')" class="text-[11px] font-semibold text-red-600 hover:text-red-800 hover:underline">
+                                        Hapus
+                                    </button>
+                                </form>
+                            </div>
                         </div>
-                        <p class="text-[11px] text-slate-500 mt-2">
-                            Burn: <strong>{{ $item->est_burn }} kcal/min</strong> • Primary: <strong>{{ $item->primary_muscle }}</strong>
-                        </p>
-                    </a>
-                @endforeach
-            </div>
+                    @endforeach
+                </div>
+            @endif
         </section>
 
     </main>
@@ -235,7 +260,7 @@
         </div>
     </footer>
 
-    <!-- Modal Tambah Exercise (CREATE - Simpel) -->
+    <!-- Modal Tambah Exercise (CREATE) -->
     <div id="createModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl space-y-4">
             <div class="flex justify-between items-center border-b pb-3">
@@ -243,7 +268,7 @@
                 <button type="button" onclick="closeCreateModal()" class="text-slate-400 hover:text-slate-700 font-bold text-lg">&times;</button>
             </div>
             <form action="{{ route('exercise.store') }}" method="POST" class="space-y-3 text-xs">
-                <input type="hidden" name="_token" value="{{ csrf_token() }}">
+                @csrf
                 <div>
                     <label class="font-bold text-slate-600">Nama Gerakan</label>
                     <input type="text" name="nama" placeholder="Contoh: Squat Jump" required class="w-full mt-1 border rounded-lg px-3 py-2">
@@ -270,7 +295,7 @@
         </div>
     </div>
 
-    <!-- Modal Edit Exercise (UPDATE - Simpel) -->
+    <!-- Modal Edit Exercise (UPDATE) -->
     @if($activeExercise)
     <div id="editModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl space-y-4">
@@ -279,8 +304,8 @@
                 <button type="button" onclick="closeEditModal()" class="text-slate-400 hover:text-slate-700 font-bold text-lg">&times;</button>
             </div>
             <form action="{{ route('exercise.update', $activeExercise->id) }}" method="POST" class="space-y-3 text-xs">
-                <input type="hidden" name="_token" value="{{ csrf_token() }}">
-                <input type="hidden" name="_method" value="PUT">
+                @csrf
+                @method('PUT')
                 <div>
                     <label class="font-bold text-slate-600">Nama Gerakan</label>
                     <input type="text" name="nama" value="{{ $activeExercise->nama }}" required class="w-full mt-1 border rounded-lg px-3 py-2">
