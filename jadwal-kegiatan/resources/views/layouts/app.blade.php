@@ -12,8 +12,18 @@
     <header class="max-w-6xl mx-auto flex items-center justify-between px-6 py-4">
         <a href="{{ route('kegiatan.index') }}" class="font-bold text-green-700">🌿 HIDUP SEHAT</a>
         <nav class="hidden md:flex gap-6 text-xs text-gray-600">
-            <span>Dashboard</span><span>Activities</span><span>Exercise</span><span>Weather</span>
-            <a href="{{ route('kegiatan.index') }}" class="text-green-700 font-semibold">Schedule</a>
+            <a href="{{ route('kegiatan.index') }}"
+               class="{{ request()->routeIs('kegiatan.*') ? 'text-green-700 font-semibold' : 'hover:text-green-700' }}">
+                Schedule
+            </a>
+            <a href="{{ route('exercise.index') }}"
+               class="{{ request()->routeIs('exercise.*') ? 'text-green-700 font-semibold' : 'hover:text-green-700' }}">
+                Exercise
+            </a>
+            <a href="{{ route('asupan-makanan.index') }}"
+               class="{{ request()->routeIs('asupan-makanan.*') ? 'text-green-700 font-semibold' : 'hover:text-green-700' }}">
+                Asupan Makanan
+            </a>
         </nav>
         <div class="w-9 h-9 rounded-full bg-gray-300"></div>
     </header>
